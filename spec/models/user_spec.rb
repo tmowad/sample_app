@@ -37,7 +37,7 @@ describe User do
   describe "when email format is invalid" do
     it "should be invalid" do
       addresses = %w[user@foo,com user_at_foo.org example.user@foo.
-                     foo@bar_baz.com foo@bar+baz.com]
+                     foo@bar_baz.com foo@bar+baz.com tom@derp..com]
       addresses.each do |invalid_address|
         @user.email = invalid_address
         expect(@user).not_to be_valid
@@ -96,5 +96,15 @@ describe User do
   describe "with a password that's too short" do
     before { @user.password = @user.password_confirmation = "a"*5 }
     it { should be_invalid }
+  end
+
+  describe "email is downcased" do
+    let(:upcase_email) { "TOM@GMAIL.COM" }
+    before do
+      @user.email = upcase_email
+      @user.save
+    end
+
+    it { expect(@user.email).to eq upcase_email.downcase }
   end
 end

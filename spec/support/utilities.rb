@@ -13,3 +13,7 @@ def sign_in(user, options={})
     click_button "Sign in"
   end
 end
+
+def sign_out
+  delete signout_path
+end

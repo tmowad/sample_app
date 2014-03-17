@@ -4,11 +4,50 @@ describe "Authentication" do
   
   subject { page }
 
+  describe "return to feature" do
+    let(:user) { FactoryGirl.create(:user) }
+
+    describe "it returns the first time" do
+      before do
+        visit users_path
+        fill_in "Email", with: user.email
+        fill_in "Password", with: user.password
+        click_button "Sign in"
+      end
+
+      it { should have_title(full_title('All users')) }
+
+      describe "but does not the second time" do
+        before do
+          click_link "Sign out"
+          visit signin_path
+          fill_in "Email", with: user.email
+          fill_in "Password", with: user.password
+          click_button "Sign in"
+        end
+ 
+        it { should_not have_title(full_title('All users')) }
+      end
+    end
+  end
+
   describe "signin page" do
     before { visit signin_path }
 
     it { should have_content('Sign in') }
     it { should have_title('Sign in') }
+  end
+
+  describe "not signed in" do
+    let(:user) { FactoryGirl.create(:user) }
+    before do 
+      visit signin_path
+    end
+
+    describe "no profile or users link" do
+      it { should_not have_link('Users', href: users_path) }
+      it { should_not have_link('Profile') }
+    end
   end
 
   describe "signin" do
@@ -107,6 +146,23 @@ describe "Authentication" do
         before { delete user_path(user) }
         specify { expect(response).to redirect_to(root_url) }
       end
+    end
+
+    describe "submitting a DELETE request for Users#destroy on self" do
+      let(:admin) { FactoryGirl.create(:admin) }
+
+      before do
+        sign_in admin, :no_capybara => true
+        delete user_path(admin)
+        visit user_path(admin)
+      end
+      
+      specify { expect(response).to redirect_to(root_url) }
+      it { should have_title(full_title(admin.name)) }
+#      describe "makes sure user is still on users/ page" do
+#        before { visit user_path(admin) }
+#        it { should have_content(admin.name) }
+#      end 
     end
   end
 end
